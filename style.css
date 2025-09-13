@@ -22,6 +22,7 @@ body {
   display:inline-flex; align-items:center; gap:6px;
   background: rgba(255,255,255,.15); padding:4px 6px; border-radius:10px;
 }
+.ctl.column{ flex-direction: column; align-items: stretch; gap:8px; }
 .ctl button{
   background:#fff; color:#0b3a75; border:none; border-radius:8px;
   padding:6px 12px; min-width:42px; min-height:34px; font-size:16px;
@@ -33,44 +34,73 @@ body {
   background:#fff; border:none; border-radius:8px; padding:4px 8px; font-size:12px; color:#0b3a75;
 }
 
-/* ステージ（横スワイプ検出のため pan-y を優先） */
+/* ステージ（横スワイプ検出のため pan-y 優先） */
 #stage {
   position:relative; height: calc(100vh - 56px);
   overflow:auto; background:#eef1f5;
-  touch-action: pan-y; /* 横操作はアプリ側で処理 */
+  touch-action: pan-y; /* 横はアプリで処理 */
 }
 
-/* ページレイヤ（PDFと手書きを一体で横にスライド） */
+/* ページレイヤ（PDFと手書きを一体で横スライド） */
 #page-layer { position:relative; transform: translateX(0); transition: transform .18s ease; will-change: transform; }
 #pdf-container { position:relative; z-index:1; margin:0 auto; }
 #draw-layer   { position:absolute; left:0; top:0; z-index:2; touch-action:none; }
 
 /* ツールバー（PDFに干渉しない） */
 #sidebar{
-  position: fixed; left:-260px; top:0; bottom:0; width:260px;
+  position: fixed; left:-280px; top:0; bottom:0; width:280px;
   background:#fff; border-right:1px solid #dde3ea; box-shadow:2px 0 10px rgba(0,0,0,.05);
   padding:12px; transition:left .25s ease; z-index:6; overflow:auto;
 }
 #sidebar.open { left:0; }
 #sidebar h2 { margin:8px 2px 10px; font-size:16px; }
-#sidebar button, #sidebar input[type="color"], #sidebar input[type="range"]{
-  width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #e5e9ef; background:#fafbfc;
+#sidebar button, #sidebar input[type="color"], #sidebar input[type="range"], #sidebar textarea, #sidebar select, #sidebar input[type="number"] {
+  width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #e5e9ef; background:#fafbfc; font-family: inherit;
 }
 .tool-group .tool.active{ outline:2px solid #1976d2; background:#e8f1ff; }
 
-/* 左端の“つまみ” 当たり拡大 */
+/* 左端“つまみ” 当たり大きめ */
 .edge-handle{
   position:fixed; left:0; top:50%; transform:translateY(-50%);
-  width:26px; height:120px; border:none; background:#1e88e5; color:#fff;
+  width:28px; height:130px; border:none; background:#1e88e5; color:#fff;
   border-radius:0 10px 10px 0; cursor:pointer; opacity:.95; z-index:7;
   box-shadow: 2px 0 8px rgba(0,0,0,.15);
 }
 .edge-handle:focus{ outline:2px solid #90caf9; }
 
-/* 手のひらON→キャンバスのポインタ無効化（移動優先） */
+/* 手のひらON→描画抑止（移動優先） */
 .hand-mode #draw-layer { pointer-events: none; }
 .hand-mode { cursor: grab; }
 .hand-dragging { cursor: grabbing; }
+
+/* 採点UI */
+.grade-box textarea, .grade-box input, .grade-box select {
+  font-size: 14px;
+}
+.grade-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#grade-run { width: 100%; padding: 10px; margin-top: 6px; }
+.grade-result { margin-top: 8px; padding: 8px; background: #f8fbff; border: 1px solid #e0eefc; border-radius: 8px; font-size: 14px; }
+.muted{ color:#667; font-size:12px; }
+
+/* ノート背景 */
+.paper-plain { background:#fff; }
+.paper-ruled {
+  background:
+    linear-gradient(#e3e7ee 1px, transparent 1px) 0 0/100% 28px,
+    #fff;
+}
+.paper-grid {
+  background:
+    linear-gradient(to right, rgba(0,0,0,.08) 1px, transparent 1px) 0 0/16px 16px,
+    linear-gradient(to bottom, rgba(0,0,0,.08) 1px, transparent 1px) 0 0/16px 16px,
+    #fff;
+}
+.paper-genkou {
+  background:
+    repeating-linear-gradient(to right, transparent, transparent 23px, rgba(0,0,0,.1) 24px),
+    repeating-linear-gradient(to bottom, transparent, transparent 23px, rgba(0,0,0,.1) 24px),
+    #fff;
+}
 
 @media (max-width: 920px){
   #stage { height: calc(100vh - 58px); }
