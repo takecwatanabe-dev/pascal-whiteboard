@@ -2,24 +2,27 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Pascal Whiteboard (MVP)</title>
+  <title>Note – Link (Whiteboard)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- コントロールバー -->
   <header class="appbar" aria-label="コントロールバー">
+    <!-- 左：ツールバー開閉 -->
     <button id="menu-toggle" class="ghost" aria-controls="sidebar" aria-expanded="false">🧰 ツール</button>
-    <h1>Pascal Whiteboard (MVP)</h1>
+    <h1>Note – Link</h1>
 
-    <div id="version" class="pill">v0.4.2</div>
+    <div id="version" class="pill">v0.5.0</div>
 
+    <!-- ページ移動 -->
     <div class="ctl" role="group" aria-label="ページ移動">
       <button id="prev-page" title="前のページ">←</button>
       <span id="page-info" aria-live="polite">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
+    <!-- 拡大縮小 -->
     <div class="ctl" role="group" aria-label="拡大縮小">
       <button id="zoom-out" title="縮小">−</button>
       <div class="zoom-stack">
@@ -29,17 +32,17 @@
       <button id="zoom-in" title="拡大">＋</button>
     </div>
 
+    <!-- PDF選択 -->
     <input type="file" id="file-input" accept="application/pdf" title="PDFを選択" />
-    <button id="install" class="ghost">インストール</button>
   </header>
 
-  <!-- 左端のハンドル（当たり拡大） -->
-  <button id="edge-toggle" class="edge-handle" aria-label="ツールバー開閉" aria-controls="sidebar" aria-expanded="false">
-    ◀
-  </button>
+  <!-- 左端のハンドル（当たり大きめ） -->
+  <button id="edge-toggle" class="edge-handle" aria-label="ツールバー開閉" aria-controls="sidebar" aria-expanded="false">◀</button>
 
+  <!-- ステージ -->
   <main id="stage" aria-label="ページ領域">
     <div id="page-layer">
+      <!-- 背景（PDFキャンバス or ノート紙面） -->
       <div id="pdf-container"></div>
       <canvas id="draw-layer" aria-label="手書きキャンバス"></canvas>
     </div>
@@ -52,18 +55,72 @@
       <button id="tool-pen"    class="tool active">✏️ ペン</button>
       <button id="tool-eraser" class="tool">🩹 消しゴム</button>
       <button id="tool-hand"   class="tool">✋ 手のひら</button>
-      <button id="clear">全消し</button>
+      <button id="clear">全消し（このページ）</button>
     </div>
+
     <label>色 <input type="color" id="color-picker" value="#000000" /></label>
     <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3" /></label>
+
     <hr />
-    <button id="export">PNG書き出し</button>
+    <h2>ノート紙面</h2>
+    <div class="paper-box">
+      <label>種類
+        <select id="paper-type">
+          <option value="pdf">PDF（既定）</option>
+          <option value="plain">白紙</option>
+          <option value="ruled">横罫線</option>
+          <option value="grid">方眼（5mm）</option>
+          <option value="genkou">縦罫（原稿用紙風）</option>
+        </select>
+      </label>
+    </div>
+
+    <hr />
+    <h2>共有 / 共同編集</h2>
+    <div class="ctl column">
+      <span id="role-badge" class="pill">local</span>
+      <button id="start-session" title="先生が新しいセッションを作成">セッション開始</button>
+      <button id="copy-teacher"  title="先生用リンクをコピー">先生リンク</button>
+      <button id="copy-view"     title="閲覧リンクをコピー">閲覧リンク</button>
+      <button id="copy-edit"     title="編集リンクをコピー">編集リンク</button>
+      <small class="muted">※ セッション中はPDF/ページ/ズーム/手書きが同期されます</small>
+    </div>
+
+    <hr />
+    <h2>書き出し</h2>
+    <button id="export">PNG書き出し（このページ）</button>
+
+    <hr />
+    <h2>採点 (Gemini)</h2>
+    <div class="grade-box">
+      <label>問題文
+        <textarea id="q-text" rows="3" placeholder="例）2x+3=7 を解け"></textarea>
+      </label>
+      <label>模範解答
+        <textarea id="a-text" rows="2" placeholder="例）x=2"></textarea>
+      </label>
+      <label>生徒の解答（テキスト）
+        <textarea id="s-text" rows="3" placeholder="まずは手入力。OCRは後で追加"></textarea>
+      </label>
+      <div class="grade-row">
+        <label>満点 <input type="number" id="max-score" value="10" min="1" max="100"></label>
+        <label>返却方法
+          <select id="return-mode">
+            <option value="review">先生が確認して返却</option>
+            <option value="auto">自動で返却</option>
+          </select>
+        </label>
+      </div>
+      <button id="grade-run">採点する</button>
+      <div id="grade-result" class="grade-result" aria-live="polite"></div>
+    </div>
   </aside>
 
   <!-- pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 
+  <!-- メイン -->
   <script src="main.js"></script>
 </body>
 </html>
