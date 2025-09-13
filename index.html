@@ -5,7 +5,7 @@
   <title>Pascal Whiteboard (MVP)</title>
   <link rel="stylesheet" href="style.css">
 </head>
-  <body>
+<body>
   <header>
     <button id="menu-toggle">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
@@ -26,10 +26,14 @@
     <button id="clear">全消し</button>
     <label>色 <input type="color" id="color-picker" value="#000000"></label>
     <label>太さ <input type="range" id="size-picker" min="1" max="10" value="2"></label>
-    <button id="export">PNG書出し</button>
+    <button id="export">PNG書き出し</button>
   </aside>
 
+  <!-- PDF.js 本体 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <!-- PDF.js worker を追加 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+  <!-- 自作スクリプト -->
   <script src="main.js"></script>
 </body>
 </html>
