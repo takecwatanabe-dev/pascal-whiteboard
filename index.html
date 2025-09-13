@@ -11,45 +11,41 @@
     <button id="menu-toggle" class="ghost">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
 
-    <div id="version" class="pill">v0.4.0</div>
+    <div id="version" class="pill">v0.4.1</div>
 
-    <!-- ページャ -->
     <div class="ctl">
       <button id="prev-page" title="前のページ">←</button>
       <span id="page-info">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
-    <!-- 拡大縮小（サイズ統一） -->
     <div class="ctl">
       <button id="zoom-out" title="縮小">−</button>
       <span id="zoom-label">100%</span>
       <button id="zoom-in" title="拡大">＋</button>
     </div>
 
-    <!-- 手のひら（パン）トグル -->
-    <div class="ctl">
-      <button id="hand-toggle" title="手のひら（ドラッグで移動）">✋</button>
-    </div>
-
     <input type="file" id="file-input" accept="application/pdf" />
     <button id="install" class="ghost">インストール</button>
   </header>
 
-  <!-- 左端の“つまみ”（PDFには干渉しない） -->
   <button id="edge-toggle" class="edge-handle" aria-label="メニュー開閉">◀</button>
 
   <main id="stage">
-    <div id="pdf-container"></div>
-    <canvas id="draw-layer"></canvas>
+    <div id="page-layer">
+      <div id="pdf-container"></div>
+      <canvas id="draw-layer"></canvas>
+    </div>
   </main>
 
-  <!-- レイヤーで重ねるサイドバー -->
   <aside id="sidebar" aria-label="ツール">
     <h2>ツール</h2>
-    <button id="pen">ペン</button>
-    <button id="eraser">消しゴム</button>
-    <button id="clear">全消し</button>
+    <div class="tool-group">
+      <button id="tool-pen"    class="tool active">✏️ ペン</button>
+      <button id="tool-eraser" class="tool">🩹 消しゴム</button>
+      <button id="tool-hand"   class="tool">✋ 手のひら</button>
+      <button id="clear">全消し</button>
+    </div>
     <label>色 <input type="color" id="color-picker" value="#000000" /></label>
     <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3" /></label>
     <hr />
