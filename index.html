@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Pascal Whiteboard (MVP)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <button id="menu-toggle">☰ メニュー</button>
+    <h1>Pascal Whiteboard (MVP)</h1>
+    <div id="version">v0.3.0</div>
+    <input type="file" id="file-input" accept="application/pdf">
+    <button id="install">インストール</button>
+  </header>
+
+  <main>
+    <div id="pdf-container"></div>
+    <canvas id="draw-layer"></canvas>
+  </main>
+
+  <aside id="sidebar">
+    <h2>ツール</h2>
+    <button id="pen">ペン</button>
+    <button id="eraser">消しゴム</button>
+    <button id="clear">全消し</button>
+    <label>色 <input type="color" id="color-picker" value="#000000"></label>
+    <label>太さ <input type="range" id="size-picker" min="1" max="10" value="2"></label>
+    <button id="export">PNG書出し</button>
+  </aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
