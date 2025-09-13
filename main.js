@@ -1,5 +1,5 @@
-// Pascal Whiteboard (MVP) v0.3.3
-// PDF表示 / 前後ページ / 拡大縮小（再描画・手書き保持）/ サイドバーは上に重ねるだけ
+// Pascal Whiteboard (MVP) v0.4.0
+// 追加: 手のひらパン / ピンチズーム / スワイプページ送り / ズームUIサイズ統一
 
 window.addEventListener("DOMContentLoaded", () => {
   // 要素
@@ -26,6 +26,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const zoomInBtn    = document.getElementById("zoom-in");
   const zoomOutBtn   = document.getElementById("zoom-out");
   const zoomLabel    = document.getElementById("zoom-label");
+
+  const handToggle   = document.getElementById("hand-toggle");
+  const stage        = document.getElementById("stage");
+  const body         = document.body;
 
   // pdf.js worker
   if (window.pdfjsLib) {
@@ -65,7 +69,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const page = await pdfDoc.getPage(pageNum);
     const viewport = page.getViewport({ scale: BASE_SCALE * zoom });
 
-    // 事前に手書き画像を保存しておく（ズームやページ切替で復元に使う）
+    // 描画保持
     let drawingImage = null;
     if (keepDrawingImage) {
       drawingImage = new Image();
@@ -73,7 +77,7 @@ window.addEventListener("DOMContentLoaded", () => {
       await imageLoaded(drawingImage);
     }
 
-    // PDFキャンバスを作り直す
+    // PDFキャンバス
     pdfContainer.innerHTML = "";
     const pdfCanvas = document.createElement("canvas");
     const pctx = pdfCanvas.getContext("2d");
@@ -82,19 +86,15 @@ window.addEventListener("DOMContentLoaded", () => {
     pdfCanvas.style.display = "block";
     pdfContainer.appendChild(pdfCanvas);
 
-    // 手書きキャンバスをPDFサイズに合わせる
+    // 手書きキャンバスサイズ
     drawCanvas.width = pdfCanvas.width;
     drawCanvas.height = pdfCanvas.height;
 
     await page.render({ canvasContext: pctx, viewport }).promise;
 
-    // 保存しておいた手書きを拡大縮小して貼り戻す
     if (drawingImage) {
-      const iw = drawingImage.width;
-      const ih = drawingImage.height;
-      dctx.drawImage(drawingImage, 0, 0, iw, ih, 0, 0, drawCanvas.width, drawCanvas.height);
+      dctx.drawImage(drawingImage, 0, 0, drawingImage.width, drawingImage.height, 0, 0, drawCanvas.width, drawCanvas.height);
     } else {
-      // ページ切替時は初期化
       dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
     }
 
@@ -126,6 +126,8 @@ window.addEventListener("DOMContentLoaded", () => {
       currentPage = 1;
       zoom = 1.0;
       await renderPage(currentPage, false);
+      // 先頭にスクロール
+      stage.scrollTo({left:0, top:0, behavior:"instant"});
     } catch (err) {
       console.error(err);
       alert("PDFの読み込みに失敗しました。別のPDFでお試しください。");
@@ -139,18 +141,20 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!pdfDoc || currentPage <= 1) return;
     currentPage--;
     await renderPage(currentPage, false);
+    stage.scrollTo({left:0, top:0, behavior:"instant"});
   });
   nextBtn.addEventListener("click", async () => {
     if (!pdfDoc || currentPage >= totalPages) return;
     currentPage++;
     await renderPage(currentPage, false);
+    stage.scrollTo({left:0, top:0, behavior:"instant"});
   });
 
-  // ===== 拡大縮小（手書き保持） =====
+  // ===== 拡大縮小（ボタン） =====
   zoomOutBtn.addEventListener("click", async () => {
     if (!pdfDoc) return;
     zoom = Math.max(ZOOM_MIN, Math.round((zoom - ZOOM_STEP) * 10) / 10);
-    await renderPage(currentPage, true); // 手書きを保持して再描画
+    await renderPage(currentPage, true);
   });
   zoomInBtn.addEventListener("click", async () => {
     if (!pdfDoc) return;
@@ -167,7 +171,7 @@ window.addEventListener("DOMContentLoaded", () => {
     return { x, y };
   }
   function startDraw(ev) {
-    if (!pdfDoc) return;
+    if (!pdfDoc || body.classList.contains("hand-mode")) return; // 手のひら中は描かない
     drawing = true;
     applyStrokeStyle();
     const p = getPoint(ev);
@@ -191,14 +195,14 @@ window.addEventListener("DOMContentLoaded", () => {
   drawCanvas.addEventListener("touchmove",  moveDraw,   { passive: false });
   drawCanvas.addEventListener("touchend",   endDraw);
 
-  penBtn.addEventListener("click",   () => { mode = "pen";    applyStrokeStyle(); });
-  eraserBtn.addEventListener("click",() => { mode = "eraser"; applyStrokeStyle(); });
-  clearBtn.addEventListener("click", () => dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height));
-  colorPicker.addEventListener("change", applyStrokeStyle);
-  sizePicker.addEventListener("input",   applyStrokeStyle);
+  penBtn?.addEventListener("click",   () => { mode = "pen";    applyStrokeStyle(); });
+  eraserBtn?.addEventListener("click",() => { mode = "eraser"; applyStrokeStyle(); });
+  clearBtn?.addEventListener("click", () => dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height));
+  colorPicker?.addEventListener("change", applyStrokeStyle);
+  sizePicker?.addEventListener("input",   applyStrokeStyle);
 
   // ===== PNG書き出し（PDF+手書き合成） =====
-  exportBtn.addEventListener("click", () => {
+  exportBtn?.addEventListener("click", () => {
     if (!pdfDoc) { alert("先にPDFを表示してください。"); return; }
     const pdfCanvas = pdfContainer.querySelector("canvas");
     if (!pdfCanvas) return;
@@ -224,4 +228,100 @@ window.addEventListener("DOMContentLoaded", () => {
   menuToggle?.addEventListener("click", () => setSidebar(!sidebar.classList.contains("open")));
   edgeToggle?.addEventListener("click", () => setSidebar(!sidebar.classList.contains("open")));
   setSidebar(false);
+
+  // ===== 手のひら（パン） =====
+  let handEnabled = false;
+  let panState = { active:false, startX:0, startY:0, startLeft:0, startTop:0 };
+
+  function setHandMode(on){
+    handEnabled = on;
+    body.classList.toggle("hand-mode", on);
+    handToggle.classList.toggle("active", on);
+  }
+  handToggle.addEventListener("click", () => setHandMode(!handEnabled));
+
+  // ドラッグで stage.scroll を動かす
+  function panStart(ev){
+    if (!handEnabled) return;
+    panState.active = true;
+    body.classList.add("hand-dragging");
+    const t = ev.touches?.[0] ?? ev;
+    panState.startX = t.clientX;
+    panState.startY = t.clientY;
+    panState.startLeft = stage.scrollLeft;
+    panState.startTop  = stage.scrollTop;
+    ev.preventDefault?.();
+  }
+  function panMove(ev){
+    if (!panState.active) return;
+    const t = ev.touches?.[0] ?? ev;
+    const dx = t.clientX - panState.startX;
+    const dy = t.clientY - panState.startY;
+    stage.scrollLeft = panState.startLeft - dx;
+    stage.scrollTop  = panState.startTop  - dy;
+    ev.preventDefault?.();
+  }
+  function panEnd(){ panState.active = false; body.classList.remove("hand-dragging"); }
+
+  // ハンドラを stage に付与（キャンバス無効化済み）
+  stage.addEventListener("mousedown", panStart);
+  stage.addEventListener("mousemove", panMove);
+  window.addEventListener("mouseup", panEnd);
+  stage.addEventListener("touchstart", panStart, {passive:false});
+  stage.addEventListener("touchmove",  panMove,  {passive:false});
+  stage.addEventListener("touchend",   panEnd);
+
+  // ===== ピンチズーム（2本指） =====
+  let pinch = { active:false, startDist:0, startZoom:1 };
+  function dist2(touches){
+    const [a,b] = touches;
+    const dx = a.clientX - b.clientX;
+    const dy = a.clientY - b.clientY;
+    return Math.hypot(dx,dy);
+  }
+  stage.addEventListener("touchstart", async (ev) => {
+    if (ev.touches.length === 2){
+      pinch.active = true;
+      pinch.startDist = dist2(ev.touches);
+      pinch.startZoom = zoom;
+      ev.preventDefault();
+    }
+  }, {passive:false});
+  stage.addEventListener("touchmove", async (ev) => {
+    if (pinch.active && ev.touches.length === 2){
+      const ratio = dist2(ev.touches) / (pinch.startDist || 1);
+      zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, +(pinch.startZoom * ratio).toFixed(2)));
+      await renderPage(currentPage, true);
+      ev.preventDefault();
+    }
+  }, {passive:false});
+  stage.addEventListener("touchend", () => { pinch.active = false; });
+
+  // ===== スワイプでページ送り（1本指・ズーム ~1.05 のときのみ） =====
+  let swipe = {x0:0, y0:0, tracking:false};
+  stage.addEventListener("touchstart", (ev) => {
+    if (ev.touches.length === 1 && zoom <= 1.05 && !handEnabled){
+      swipe.tracking = true;
+      swipe.x0 = ev.touches[0].clientX;
+      swipe.y0 = ev.touches[0].clientY;
+    } else {
+      swipe.tracking = false;
+    }
+  }, {passive:true});
+  stage.addEventListener("touchend", async (ev) => {
+    if (!swipe.tracking) return;
+    const t = ev.changedTouches?.[0];
+    if (!t) return;
+    const dx = t.clientX - swipe.x0;
+    const dy = t.clientY - swipe.y0;
+    // 横方向に大きいスワイプのみ
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy)*1.5){
+      if (dx < 0) { // 左へ → 次ページ
+        if (currentPage < totalPages){ currentPage++; await renderPage(currentPage, false); }
+      } else {     // 右へ → 前ページ
+        if (currentPage > 1){ currentPage--; await renderPage(currentPage, false); }
+      }
+      stage.scrollTo({left:0, top:0, behavior:"instant"});
+    }
+  }, {passive:true});
 });
