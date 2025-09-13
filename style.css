@@ -18,21 +18,23 @@ body {
 .ghost { background:#1565c0; color:#fff; border:1px solid #0d47a1; border-radius:8px; padding:6px 10px; }
 .pill  { background:#0b3a75; padding:2px 8px; border-radius:999px; font-variant-numeric: tabular-nums; }
 
-.pager, .zoom {
+/* コントロール群（サイズ統一） */
+.ctl{
   display:inline-flex; align-items:center; gap:6px;
   background: rgba(255,255,255,.15); padding:4px 6px; border-radius:10px;
 }
-.pager button, .zoom button {
-  background:#fff; color:#0b3a75; border:none; border-radius:6px; padding:4px 10px; min-width:34px;
+.ctl button{
+  background:#fff; color:#0b3a75; border:none; border-radius:8px;
+  padding:6px 12px; min-width:42px; min-height:34px; font-size:16px;
 }
-.pager button:disabled { opacity:.4; cursor:not-allowed; }
-#page-info { min-width:76px; text-align:center; color:#fff; }
-#zoom-label { min-width:56px; text-align:center; color:#fff; }
+.ctl span{ min-width:64px; text-align:center; color:#fff; }
+#page-info { min-width:76px; }
+#zoom-label{ min-width:64px; }
 
 /* ステージ（PDF＋手書き） */
 #stage { position:relative; height: calc(100vh - 56px); overflow:auto; background:#eef1f5; }
 #pdf-container { position:relative; z-index:1; margin:0 auto; }
-#draw-layer   { position:absolute; left:0; top:0; z-index:2; }
+#draw-layer   { position:absolute; left:0; top:0; z-index:2; touch-action:none; } /* 手描き優先 */
 
 /* サイドバー：PDFに干渉しない（上に重なるだけ） */
 #sidebar{
@@ -53,6 +55,11 @@ body {
   border-radius:0 8px 8px 0; cursor:pointer; opacity:.92; z-index:7;
 }
 .edge-handle:focus{ outline:2px solid #90caf9; }
+
+/* “手のひら”有効時はドロー抑止（パン優先） */
+.hand-mode #draw-layer { pointer-events: none; } /* 手のひらの時はキャンバス無効化 */
+.hand-mode { cursor: grab; }
+.hand-dragging { cursor: grabbing; }
 
 @media (max-width: 920px){
   #stage { height: calc(100vh - 58px); }
