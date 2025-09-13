@@ -1,7 +1,8 @@
 /* 全体レイアウト */
+* { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -11,21 +12,46 @@ body {
 header {
   display: flex;
   align-items: center;
+  gap: 8px;
   background: #1976d2;
-  color: white;
-  padding: 5px 10px;
+  color: #fff;
+  padding: 6px 10px;
   z-index: 4;
 }
-
 header h1 {
-  flex: 1;
+  margin: 0 8px;
   font-size: 18px;
-  margin: 0 10px;
+  font-weight: 600;
+  flex: 1;
 }
+#version { opacity: .9; font-variant-numeric: tabular-nums; }
 
 header button, header input {
-  margin-left: 8px;
+  background: #fff;
+  color: #0b3a75;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
 }
+header #menu-toggle { background: #1565c0; color: #fff; border: 1px solid #0d47a1; }
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.15);
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+.pager button {
+  padding: 4px 8px;
+  background: #fff;
+  color: #0b3a75;
+  min-width: 34px;
+}
+.pager button:disabled { opacity: .4; cursor: not-allowed; }
+#page-info { min-width: 76px; text-align: center; color: #fff; font-variant-numeric: tabular-nums; }
 
 main {
   flex: 1;
@@ -36,56 +62,37 @@ main {
 }
 
 /* PDFとキャンバスの重なり */
-#pdf-container {
-  position: relative;
-  z-index: 1;
-}
-#draw-layer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 2;
-}
+#pdf-container { position: relative; z-index: 1; }
+#draw-layer   { position: absolute; left: 0; top: 0; z-index: 2; }
 
 /* サイドバー */
-#sidebar {
+#sidebar{
   position: fixed;
-  left: -220px;
-  top: 0;
-  bottom: 0;
+  left: -220px; top: 0; bottom: 0;
   width: 220px;
   background: #fff;
   border-right: 1px solid #ddd;
-  padding: 10px;
+  padding: 12px 10px;
   transition: left .25s ease;
   z-index: 3;
   overflow: auto;
 }
-#sidebar.open {
-  left: 0;
+#sidebar.open{ left: 0; }
+#sidebar h2 { margin: 6px 4px 10px; font-size: 16px; }
+#sidebar button, #sidebar input[type="color"], #sidebar input[type="range"]{
+  width: 100%;
+  margin: 6px 0;
 }
 
-/* サイドバーが開いたときはメイン領域をずらす */
-body.sidebar-open main {
-  margin-left: 220px;
-}
+/* 開いたときキャンバスを右へ */
+body.sidebar-open main { margin-left: 220px; }
 
 /* 左端の“つまみ” */
-.edge-handle {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 80px;
-  border: none;
-  background: #1e88e5;
-  color: #fff;
+.edge-handle{
+  position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 80px;
+  border: none; background: #1e88e5; color: #fff;
   border-radius: 0 6px 6px 0;
-  cursor: pointer;
-  opacity: .85;
-  z-index: 3;
+  cursor: pointer; opacity: .9; z-index: 3;
 }
-.edge-handle:focus {
-  outline: 2px solid #90caf9;
-}
+.edge-handle:focus{ outline: 2px solid #90caf9; }
