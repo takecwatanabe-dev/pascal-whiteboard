@@ -1,8 +1,7 @@
-// main.js  — Pascal Whiteboard (MVP) PDF表示 + 手書き描画
-// 必要: index.html に pdf.min.js と pdf.worker.min.js を読み込み済み
+// main.js - Pascal Whiteboard (MVP) PDF表示＋手書き描画
 
 window.addEventListener("DOMContentLoaded", () => {
-  // ====== 要素参照 ======
+  // ===== 要素取得 =====
   const fileInput = document.getElementById("file-input");
   const pdfContainer = document.getElementById("pdf-container");
   const drawCanvas = document.getElementById("draw-layer");
@@ -15,22 +14,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const sizePicker = document.getElementById("size-picker");
   const exportBtn = document.getElementById("export");
 
-  // ====== 描画状態 ======
+  // ===== 描画設定 =====
   let drawing = false;
   let mode = "pen"; // "pen" or "eraser"
-  let pdfCanvas = null; // pdf.js が描画するキャンバス
-  let scale = 1.2; // PDFの表示倍率（必要に応じて変えてOK）
+  let pdfCanvas = null; // PDF が描画されるキャンバス
 
-  // ====== pdf.js 設定（CDNを使う場合はworkerSrcの指定は不要だが、明示してもOK） ======
+  // ===== pdf.js 設定 =====
   if (window["pdfjsLib"]) {
-    // 参考: pdfjsLib.GlobalWorkerOptions.workerSrc = '.../pdf.worker.min.js';
+    // ここを CDN のフルURLに修正
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
   } else {
-    console.warn("pdf.js が読み込まれていません。index.htmlの <script> を確認してください。");
+    console.warn("pdf.js が読み込まれていません。index.html の <script> を確認してください。");
   }
 
-  // ====== PDF読み込み → 1ページ目を描画 ======
+  // ===== PDF読み込み＋描画 =====
   fileInput.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     const url = URL.createObjectURL(file);
@@ -38,148 +38,79 @@ window.addEventListener("DOMContentLoaded", () => {
       const pdf = await pdfjsLib.getDocument(url).promise;
       const page = await pdf.getPage(1);
 
+      const scale = 1.5;
       const viewport = page.getViewport({ scale });
 
-      // 既存のPDFキャンバスを消して作り直し
+      // PDF用キャンバスを生成
       pdfContainer.innerHTML = "";
       pdfCanvas = document.createElement("canvas");
-      const pdfCtx = pdfCanvas.getContext("2d");
       pdfCanvas.width = viewport.width;
       pdfCanvas.height = viewport.height;
-      pdfCanvas.style.display = "block";
       pdfContainer.appendChild(pdfCanvas);
 
-      // レンダリング
-      await page.render({ canvasContext: pdfCtx, viewport }).promise;
+      // 手書きレイヤーの大きさを合わせる
+      drawCanvas.width = viewport.width;
+      drawCanvas.height = viewport.height;
 
-      // 手書きキャンバスをPDFにぴったり重ねる
-      fitDrawCanvasToPdf();
-
+      const pdfCtx = pdfCanvas.getContext("2d");
+      const renderContext = {
+        canvasContext: pdfCtx,
+        viewport: viewport,
+      };
+      await page.render(renderContext).promise;
     } catch (err) {
-      console.error(err);
-      alert("PDFの読み込みに失敗しました。別のファイルでお試しください。");
-    } finally {
-      URL.revokeObjectURL(url);
+      console.error("PDFの読み込みエラー:", err);
     }
   });
 
-  // ====== 手書きキャンバスのサイズ調整 ======
-  function fitDrawCanvasToPdf() {
-    if (!pdfCanvas) return;
-    drawCanvas.width = pdfCanvas.width;
-    drawCanvas.height = pdfCanvas.height;
-
-    // PDFキャンバスの上に重ねる（index.cssで position:absolute 指定済み）
-    const pdfRect = pdfCanvas.getBoundingClientRect();
-    const containerRect = pdfContainer.getBoundingClientRect();
-    drawCanvas.style.left = (pdfCanvas.offsetLeft || 0) + "px";
-    drawCanvas.style.top = (pdfCanvas.offsetTop || 0) + "px";
-
-    // 描画スタイル初期化
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = colorPicker.value;
-    ctx.lineWidth = Number(sizePicker.value);
-    ctx.globalCompositeOperation = "source-over";
-  }
-
-  // 画面サイズが変わってもPDFキャンバスのCSS位置は変わり得るので追従
-  window.addEventListener("resize", () => {
-    // PDF自体のピクセルサイズは固定。位置合わせのみ再計算。
-    fitDrawCanvasToPdf();
+  // ===== 描画処理 =====
+  drawCanvas.addEventListener("mousedown", (e) => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
   });
 
-  // ====== ツール ======
-  penBtn.addEventListener("click", () => {
-    mode = "pen";
-    ctx.globalCompositeOperation = "source-over";
-    ctx.strokeStyle = colorPicker.value;
-    ctx.lineWidth = Number(sizePicker.value);
+  drawCanvas.addEventListener("mousemove", (e) => {
+    if (!drawing) return;
+    ctx.strokeStyle = mode === "pen" ? colorPicker.value : "#FFFFFF";
+    ctx.lineWidth = sizePicker.value;
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
   });
 
-  eraserBtn.addEventListener("click", () => {
-    mode = "eraser";
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = Number(sizePicker.value) * 2;
+  drawCanvas.addEventListener("mouseup", () => {
+    drawing = false;
+    ctx.closePath();
   });
 
+  drawCanvas.addEventListener("mouseleave", () => {
+    drawing = false;
+    ctx.closePath();
+  });
+
+  // ===== ボタン動作 =====
+  penBtn.addEventListener("click", () => (mode = "pen"));
+  eraserBtn.addEventListener("click", () => (mode = "eraser"));
   clearBtn.addEventListener("click", () => {
     ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
   });
 
-  colorPicker.addEventListener("change", () => {
-    if (mode === "pen") ctx.strokeStyle = colorPicker.value;
-  });
-
-  sizePicker.addEventListener("input", () => {
-    const w = Number(sizePicker.value);
-    ctx.lineWidth = mode === "eraser" ? w * 2 : w;
-  });
-
-  // ====== 手書きイベント（マウス/タッチ/ペン） ======
-  function pointFromEvent(ev) {
-    const rect = drawCanvas.getBoundingClientRect();
-    let clientX, clientY;
-    if (ev.touches && ev.touches[0]) {
-      clientX = ev.touches[0].clientX;
-      clientY = ev.touches[0].clientY;
-    } else {
-      clientX = ev.clientX;
-      clientY = ev.clientY;
-    }
-    return { x: clientX - rect.left, y: clientY - rect.top };
-  }
-
-  function startDraw(ev) {
-    if (!pdfCanvas) return; // PDF未表示のときは無視
-    drawing = true;
-    const p = pointFromEvent(ev);
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    ev.preventDefault();
-  }
-
-  function moveDraw(ev) {
-    if (!drawing) return;
-    const p = pointFromEvent(ev);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-    ev.preventDefault();
-  }
-
-  function endDraw() {
-    drawing = false;
-  }
-
-  // マウス
-  drawCanvas.addEventListener("mousedown", startDraw);
-  drawCanvas.addEventListener("mousemove", moveDraw);
-  window.addEventListener("mouseup", endDraw);
-  // タッチ
-  drawCanvas.addEventListener("touchstart", startDraw, { passive: false });
-  drawCanvas.addEventListener("touchmove", moveDraw, { passive: false });
-  drawCanvas.addEventListener("touchend", endDraw);
-
-  // ====== PNG書き出し（PDF+手書きの合成画像） ======
+  // PNG書き出し
   exportBtn.addEventListener("click", () => {
-    if (!pdfCanvas) {
-      alert("先にPDFを表示してください。");
-      return;
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = drawCanvas.width;
+    exportCanvas.height = drawCanvas.height;
+    const exportCtx = exportCanvas.getContext("2d");
+
+    // PDF + 手書きの合成
+    if (pdfCanvas) {
+      exportCtx.drawImage(pdfCanvas, 0, 0);
     }
-    const out = document.createElement("canvas");
-    out.width = pdfCanvas.width;
-    out.height = pdfCanvas.height;
-    const octx = out.getContext("2d");
-    // PDF → 手書き の順で合成
-    octx.drawImage(pdfCanvas, 0, 0);
-    octx.drawImage(drawCanvas, 0, 0);
+    exportCtx.drawImage(drawCanvas, 0, 0);
 
-    const a = document.createElement("a");
-    a.href = out.toDataURL("image/png");
-    a.download = "pascal-whiteboard.png";
-    a.click();
+    const link = document.createElement("a");
+    link.download = "export.png";
+    link.href = exportCanvas.toDataURL("image/png");
+    link.click();
   });
-
-  // 初期ツールはペン
-  penBtn.click();
 });
