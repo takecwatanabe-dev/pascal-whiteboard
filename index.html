@@ -4,12 +4,23 @@
   <meta charset="UTF-8">
   <title>Pascal Whiteboard (MVP)</title>
   <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
   <header>
     <button id="menu-toggle">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
-    <div id="version">v0.3.0</div>
+
+    <div id="version">v0.3.1</div>
+
+    <!-- ページャ -->
+    <div class="pager">
+      <button id="prev-page" title="前のページ">←</button>
+      <span id="page-info">— / —</span>
+      <button id="next-page" title="次のページ">→</button>
+    </div>
+
+    <!-- PDF選択＆インストール -->
     <input type="file" id="file-input" accept="application/pdf">
     <button id="install">インストール</button>
   </header>
@@ -28,13 +39,15 @@
     <button id="eraser">消しゴム</button>
     <button id="clear">全消し</button>
     <label>色 <input type="color" id="color-picker" value="#000000"></label>
-    <label>太さ <input type="range" id="size-picker" min="1" max="10" value="2"></label>
+    <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3"></label>
     <button id="export">PNG書き出し</button>
   </aside>
 
-  <!-- PDF.js -->
+  <!-- PDF.js（本体とworker） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <!-- メインスクリプト -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+
+  <!-- アプリ本体 -->
   <script src="main.js"></script>
 </body>
 </html>
