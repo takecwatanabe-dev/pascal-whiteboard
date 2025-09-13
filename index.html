@@ -3,47 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <title>Pascal Whiteboard (MVP)</title>
-  <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <button id="menu-toggle">☰ メニュー</button>
+  <header class="appbar">
+    <button id="menu-toggle" class="ghost">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
 
-    <div id="version">v0.3.1</div>
+    <div id="version" class="pill">v0.3.2</div>
 
-    <!-- ページャ -->
     <div class="pager">
       <button id="prev-page" title="前のページ">←</button>
       <span id="page-info">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
-    <!-- PDF選択＆インストール -->
-    <input type="file" id="file-input" accept="application/pdf">
-    <button id="install">インストール</button>
+    <input type="file" id="file-input" accept="application/pdf" />
+    <button id="install" class="ghost">インストール</button>
   </header>
 
-  <!-- 左端の“つまみ” -->
+  <!-- 左端の“つまみ”（サイドバー開閉）。PDFには一切干渉しない -->
   <button id="edge-toggle" class="edge-handle" aria-label="メニュー開閉">◀</button>
 
-  <main>
+  <main id="stage">
     <div id="pdf-container"></div>
     <canvas id="draw-layer"></canvas>
   </main>
 
-  <aside id="sidebar">
+  <!-- レイヤーで上に被せるサイドバー（開閉してもPDFは動かない） -->
+  <aside id="sidebar" aria-label="ツール">
     <h2>ツール</h2>
     <button id="pen">ペン</button>
     <button id="eraser">消しゴム</button>
     <button id="clear">全消し</button>
     <label>色 <input type="color" id="color-picker" value="#000000"></label>
     <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3"></label>
+    <hr>
     <button id="export">PNG書き出し</button>
   </aside>
 
-  <!-- PDF.js（本体とworker） -->
+  <!-- pdf.js（本体とworker） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 
