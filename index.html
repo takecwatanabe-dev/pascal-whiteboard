@@ -11,20 +11,25 @@
     <button id="menu-toggle" class="ghost">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
 
-    <div id="version" class="pill">v0.3.3</div>
+    <div id="version" class="pill">v0.4.0</div>
 
     <!-- ページャ -->
-    <div class="pager">
+    <div class="ctl">
       <button id="prev-page" title="前のページ">←</button>
       <span id="page-info">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
-    <!-- 拡大縮小 -->
-    <div class="zoom">
+    <!-- 拡大縮小（サイズ統一） -->
+    <div class="ctl">
       <button id="zoom-out" title="縮小">−</button>
       <span id="zoom-label">100%</span>
       <button id="zoom-in" title="拡大">＋</button>
+    </div>
+
+    <!-- 手のひら（パン）トグル -->
+    <div class="ctl">
+      <button id="hand-toggle" title="手のひら（ドラッグで移動）">✋</button>
     </div>
 
     <input type="file" id="file-input" accept="application/pdf" />
