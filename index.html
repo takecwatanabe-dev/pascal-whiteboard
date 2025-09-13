@@ -7,38 +7,46 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="appbar">
-    <button id="menu-toggle" class="ghost">☰ メニュー</button>
+  <!-- コントロールバー -->
+  <header class="appbar" aria-label="コントロールバー">
+    <button id="menu-toggle" class="ghost" aria-controls="sidebar" aria-expanded="false">🧰 ツール</button>
     <h1>Pascal Whiteboard (MVP)</h1>
 
-    <div id="version" class="pill">v0.4.1</div>
+    <div id="version" class="pill">v0.4.2</div>
 
-    <div class="ctl">
+    <div class="ctl" role="group" aria-label="ページ移動">
       <button id="prev-page" title="前のページ">←</button>
-      <span id="page-info">— / —</span>
+      <span id="page-info" aria-live="polite">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
-    <div class="ctl">
+    <div class="ctl" role="group" aria-label="拡大縮小">
       <button id="zoom-out" title="縮小">−</button>
-      <span id="zoom-label">100%</span>
+      <div class="zoom-stack">
+        <span id="zoom-label">100%</span>
+        <button id="zoom-reset" title="100%に戻す">100%</button>
+      </div>
       <button id="zoom-in" title="拡大">＋</button>
     </div>
 
-    <input type="file" id="file-input" accept="application/pdf" />
+    <input type="file" id="file-input" accept="application/pdf" title="PDFを選択" />
     <button id="install" class="ghost">インストール</button>
   </header>
 
-  <button id="edge-toggle" class="edge-handle" aria-label="メニュー開閉">◀</button>
+  <!-- 左端のハンドル（当たり拡大） -->
+  <button id="edge-toggle" class="edge-handle" aria-label="ツールバー開閉" aria-controls="sidebar" aria-expanded="false">
+    ◀
+  </button>
 
-  <main id="stage">
+  <main id="stage" aria-label="ページ領域">
     <div id="page-layer">
       <div id="pdf-container"></div>
-      <canvas id="draw-layer"></canvas>
+      <canvas id="draw-layer" aria-label="手書きキャンバス"></canvas>
     </div>
   </main>
 
-  <aside id="sidebar" aria-label="ツール">
+  <!-- ツールバー -->
+  <aside id="sidebar" aria-label="ツールバー">
     <h2>ツール</h2>
     <div class="tool-group">
       <button id="tool-pen"    class="tool active">✏️ ペン</button>
