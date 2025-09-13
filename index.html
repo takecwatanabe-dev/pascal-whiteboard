@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Pascal Whiteboard (MVP)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="appbar">
     <button id="menu-toggle" class="ghost">☰ メニュー</button>
     <h1>Pascal Whiteboard (MVP)</h1>
 
-    <div id="version" class="pill">v0.3.2</div>
+    <div id="version" class="pill">v0.3.3</div>
 
+    <!-- ページャ -->
     <div class="pager">
       <button id="prev-page" title="前のページ">←</button>
       <span id="page-info">— / —</span>
       <button id="next-page" title="次のページ">→</button>
     </div>
 
+    <!-- 拡大縮小 -->
+    <div class="zoom">
+      <button id="zoom-out" title="縮小">−</button>
+      <span id="zoom-label">100%</span>
+      <button id="zoom-in" title="拡大">＋</button>
+    </div>
+
     <input type="file" id="file-input" accept="application/pdf" />
     <button id="install" class="ghost">インストール</button>
   </header>
 
-  <!-- 左端の“つまみ”（サイドバー開閉）。PDFには一切干渉しない -->
+  <!-- 左端の“つまみ”（PDFには干渉しない） -->
   <button id="edge-toggle" class="edge-handle" aria-label="メニュー開閉">◀</button>
 
   <main id="stage">
@@ -31,23 +39,22 @@
     <canvas id="draw-layer"></canvas>
   </main>
 
-  <!-- レイヤーで上に被せるサイドバー（開閉してもPDFは動かない） -->
+  <!-- レイヤーで重ねるサイドバー -->
   <aside id="sidebar" aria-label="ツール">
     <h2>ツール</h2>
     <button id="pen">ペン</button>
     <button id="eraser">消しゴム</button>
     <button id="clear">全消し</button>
-    <label>色 <input type="color" id="color-picker" value="#000000"></label>
-    <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3"></label>
-    <hr>
+    <label>色 <input type="color" id="color-picker" value="#000000" /></label>
+    <label>太さ <input type="range" id="size-picker" min="1" max="16" value="3" /></label>
+    <hr />
     <button id="export">PNG書き出し</button>
   </aside>
 
-  <!-- pdf.js（本体とworker） -->
+  <!-- pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 
-  <!-- アプリ本体 -->
   <script src="main.js"></script>
 </body>
 </html>
