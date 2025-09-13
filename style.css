@@ -5,7 +5,7 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
   background: #f4f6f8;
   color: #111;
-  overflow: hidden; /* 縦スクロールは main に任せる */
+  overflow: hidden;
 }
 
 /* ヘッダー */
@@ -18,7 +18,7 @@ body {
 .ghost { background:#1565c0; color:#fff; border:1px solid #0d47a1; border-radius:8px; padding:6px 10px; }
 .pill  { background:#0b3a75; padding:2px 8px; border-radius:999px; font-variant-numeric: tabular-nums; }
 
-/* コントロール群（サイズ統一） */
+/* コントロール（サイズ統一） */
 .ctl{
   display:inline-flex; align-items:center; gap:6px;
   background: rgba(255,255,255,.15); padding:4px 6px; border-radius:10px;
@@ -31,14 +31,17 @@ body {
 #page-info { min-width:76px; }
 #zoom-label{ min-width:64px; }
 
-/* ステージ（PDF＋手書き） */
+/* ステージ */
 #stage { position:relative; height: calc(100vh - 56px); overflow:auto; background:#eef1f5; }
+
+/* ページレイヤ（PDFと手書きを一体で横にスライドさせる） */
+#page-layer { position:relative; transform: translateX(0); transition: transform .18s ease; will-change: transform; }
 #pdf-container { position:relative; z-index:1; margin:0 auto; }
 #draw-layer   { position:absolute; left:0; top:0; z-index:2; touch-action:none; } /* 手描き優先 */
 
-/* サイドバー：PDFに干渉しない（上に重なるだけ） */
+/* サイドバー（PDFに干渉しない） */
 #sidebar{
-  position: fixed; left:-240px; top:0; bottom:0; width:240px;
+  position: fixed; left:-260px; top:0; bottom:0; width:260px;
   background:#fff; border-right:1px solid #dde3ea; box-shadow:2px 0 10px rgba(0,0,0,.05);
   padding:12px; transition:left .25s ease; z-index:6; overflow:auto;
 }
@@ -47,6 +50,7 @@ body {
 #sidebar button, #sidebar input[type="color"], #sidebar input[type="range"]{
   width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #e5e9ef; background:#fafbfc;
 }
+.tool-group .tool.active{ outline:2px solid #1976d2; background:#e8f1ff; }
 
 /* 左端の“つまみ” */
 .edge-handle{
@@ -56,8 +60,8 @@ body {
 }
 .edge-handle:focus{ outline:2px solid #90caf9; }
 
-/* “手のひら”有効時はドロー抑止（パン優先） */
-.hand-mode #draw-layer { pointer-events: none; } /* 手のひらの時はキャンバス無効化 */
+/* 手のひらON→キャンバスのポインタ無効化（移動優先） */
+.hand-mode #draw-layer { pointer-events: none; }
 .hand-mode { cursor: grab; }
 .hand-dragging { cursor: grabbing; }
 
