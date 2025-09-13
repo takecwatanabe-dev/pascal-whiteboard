@@ -1,127 +1,59 @@
-/* ベース */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
-  color: #111;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
   background: #f4f6f8;
-  overflow: hidden; /* スクロールはmainに任せる */
+  color: #111;
+  overflow: hidden; /* 縦スクロールは main に任せる */
 }
 
-/* ヘッダー（固定） */
+/* ヘッダー */
 .appbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  background: #1976d2;
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 5; /* サイドバーより上でもOK */
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: #1976d2; color: #fff;
 }
-.appbar h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  flex: 1;
-}
-.appbar input[type="file"] {
-  background: #fff;
-  color: #0b3a75;
-  border-radius: 8px;
-  padding: 6px 8px;
-}
-.ghost {
-  background: #1565c0;
-  color: #fff;
-  border: 1px solid #0d47a1;
-  border-radius: 8px;
-  padding: 6px 10px;
-}
-.pill {
-  background: #0b3a75;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
-}
-.pager {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,.15);
-  padding: 4px 6px;
-  border-radius: 10px;
-}
-.pager button {
-  background: #fff;
-  color: #0b3a75;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  min-width: 36px;
-}
-.pager button:disabled { opacity: .4; cursor: not-allowed; }
-#page-info { min-width: 76px; text-align: center; color:#fff; }
+.appbar h1 { margin: 0; font-size: 18px; font-weight: 600; flex: 1; }
+.ghost { background:#1565c0; color:#fff; border:1px solid #0d47a1; border-radius:8px; padding:6px 10px; }
+.pill  { background:#0b3a75; padding:2px 8px; border-radius:999px; font-variant-numeric: tabular-nums; }
 
-/* メイン領域（PDF & 手書き） */
-#stage {
-  position: relative;
-  height: calc(100vh - 54px);
-  overflow: auto;
-  background: #eef1f5;
+.pager, .zoom {
+  display:inline-flex; align-items:center; gap:6px;
+  background: rgba(255,255,255,.15); padding:4px 6px; border-radius:10px;
 }
-#pdf-container { position: relative; z-index: 1; margin: 0 auto; }
-#draw-layer   { position: absolute; left: 0; top: 0; z-index: 2; }
+.pager button, .zoom button {
+  background:#fff; color:#0b3a75; border:none; border-radius:6px; padding:4px 10px; min-width:34px;
+}
+.pager button:disabled { opacity:.4; cursor:not-allowed; }
+#page-info { min-width:76px; text-align:center; color:#fff; }
+#zoom-label { min-width:56px; text-align:center; color:#fff; }
 
-/* サイドバー：固定レイヤーで上に被せるだけ（メインは動かさない） */
+/* ステージ（PDF＋手書き） */
+#stage { position:relative; height: calc(100vh - 56px); overflow:auto; background:#eef1f5; }
+#pdf-container { position:relative; z-index:1; margin:0 auto; }
+#draw-layer   { position:absolute; left:0; top:0; z-index:2; }
+
+/* サイドバー：PDFに干渉しない（上に重なるだけ） */
 #sidebar{
-  position: fixed;
-  left: -240px; /* デフォは隠す */
-  top: 0;
-  bottom: 0;
-  width: 240px;
-  background: #fff;
-  border-right: 1px solid #dde3ea;
-  box-shadow: 2px 0 10px rgba(0,0,0,.05);
-  padding: 12px 12px 16px;
-  transition: left .25s ease;
-  z-index: 6; /* ヘッダーと同等以上に */
-  overflow: auto;
+  position: fixed; left:-240px; top:0; bottom:0; width:240px;
+  background:#fff; border-right:1px solid #dde3ea; box-shadow:2px 0 10px rgba(0,0,0,.05);
+  padding:12px; transition:left .25s ease; z-index:6; overflow:auto;
 }
-#sidebar.open{ left: 0; }
-#sidebar h2 { margin: 8px 2px 10px; font-size: 16px; }
-#sidebar button,
-#sidebar input[type="color"],
-#sidebar input[type="range"]{
-  width: 100%;
-  margin: 6px 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e9ef;
-  background: #fafbfc;
+#sidebar.open { left:0; }
+#sidebar h2 { margin:8px 2px 10px; font-size:16px; }
+#sidebar button, #sidebar input[type="color"], #sidebar input[type="range"]{
+  width:100%; margin:6px 0; padding:8px 10px; border-radius:8px; border:1px solid #e5e9ef; background:#fafbfc;
 }
 
-/* 左端の“つまみ”ボタン：PDFに干渉しない */
+/* 左端の“つまみ” */
 .edge-handle{
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 88px;
-  border: none;
-  background: #1e88e5;
-  color: #fff;
-  border-radius: 0 8px 8px 0;
-  cursor: pointer;
-  opacity: .92;
-  z-index: 7;
+  position:fixed; left:0; top:50%; transform:translateY(-50%);
+  width:18px; height:88px; border:none; background:#1e88e5; color:#fff;
+  border-radius:0 8px 8px 0; cursor:pointer; opacity:.92; z-index:7;
 }
-.edge-handle:focus{ outline: 2px solid #90caf9; }
+.edge-handle:focus{ outline:2px solid #90caf9; }
 
-/* 小さめ画面最適化 */
 @media (max-width: 920px){
-  #stage { height: calc(100vh - 56px); }
+  #stage { height: calc(100vh - 58px); }
 }
